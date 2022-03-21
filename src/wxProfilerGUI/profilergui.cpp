@@ -649,10 +649,8 @@ bool ProfilerGUI::Run()
 				}
 			}
 			info->thread_handles = profile_threads;
+			// Do not attach to any new threads created after this point in time.
 			info->attach_all_threads = false;
-		}
-		else {
-			info->attach_all_threads = true;
 		}
 		filename = LaunchProfiler(info.get());
 	}
