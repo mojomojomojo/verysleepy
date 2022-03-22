@@ -223,16 +223,16 @@ bool Profiler::sampleTarget(SAMPLE_TYPE timeSpent, SymbolInfo *syminfo)
 	machine = IMAGE_FILE_MACHINE_I386;
 
 	// Can fail occasionally, for example if you have a debugger attached to the process.
-	HRESULT suspend_result = SuspendThread(target_thread);
-	if(suspend_result == 0xffffffff)
+	HRESULT hresult = SuspendThread(target_thread);
+	if(hresult == 0xffffffff)
 		return false;
 
 	int prev_priority = GetThreadPriority(target_thread);
 	SetThreadPriority(target_thread, THREAD_PRIORITY_TIME_CRITICAL);
-	suspend_result = GetThreadContext(target_thread, &threadcontext32);
+	hresult = GetThreadContext(target_thread, &threadcontext32);
 	SetThreadPriority(target_thread, prev_priority);
 
-	if(!suspend_result){
+	if(!hresult){
 		// DE: 20090325: If GetThreadContext fails we must be sure to resume thread again
 		ResumeThread(target_thread);
 		return false;
@@ -279,7 +279,7 @@ bool Profiler::sampleTarget(SAMPLE_TYPE timeSpent, SymbolInfo *syminfo)
 			stack.addr[stack.depth++] = ip;
 		first = false;
 
-		BOOL walk_result = dbgHelp->StackWalk64(
+		BOOL result = dbgHelp->StackWalk64(
 			machine,
 			target_process,
 			target_thread,
@@ -291,7 +291,7 @@ bool Profiler::sampleTarget(SAMPLE_TYPE timeSpent, SymbolInfo *syminfo)
 			NULL
 		);
 
-		if (!walk_result || stack.depth >= MAX_CALLSTACK_LEVELS)
+		if (!result || stack.depth >= MAX_CALLSTACK_LEVELS)
 			break;
 
 		ip = (PROFILER_ADDR)frame.AddrPC.Offset;
